@@ -1,0 +1,1612 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>FitLog · 健身紀錄</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0d0d0f;
+  --surface: #16161a;
+  --surface2: #1e1e24;
+  --surface3: #26262e;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.12);
+  --accent: #c8f04a;
+  --accent2: #7df0b8;
+  --accent3: #f04a7d;
+  --text: #f0f0f0;
+  --text2: #9090a0;
+  --text3: #5a5a6a;
+  --radius: 16px;
+  --radius-sm: 10px;
+  --mono: 'Space Mono', monospace;
+  --sans: 'Noto Sans TC', sans-serif;
+  --tab-h: 68px;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  min-height: 100vh;
+  max-width: 430px;
+  margin: 0 auto;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* ── scrollbar ── */
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 2px; }
+
+/* ── layout ── */
+#app { display: flex; flex-direction: column; height: 100vh; }
+
+.topbar {
+  padding: 52px 20px 16px;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-shrink: 0;
+}
+.topbar-title {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--text2);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.topbar h1 {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.page {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 0 calc(var(--tab-h) + 16px);
+  scroll-behavior: smooth;
+}
+.page-inner { padding: 0 16px; }
+
+.tabbar {
+  position: fixed;
+  bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 100%; max-width: 430px;
+  height: var(--tab-h);
+  background: rgba(13,13,15,0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: flex-start;
+  padding-top: 10px;
+  z-index: 100;
+}
+.tab-btn {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  gap: 4px; background: none; border: none; cursor: pointer;
+  color: var(--text3); transition: color 0.2s;
+  padding: 6px 0;
+}
+.tab-btn.active { color: var(--accent); }
+.tab-icon { font-size: 22px; line-height: 1; }
+.tab-label { font-size: 10px; font-family: var(--sans); font-weight: 500; }
+
+/* ── cards ── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 12px;
+}
+.card-title {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text2);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+/* ── buttons ── */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  border: none; border-radius: var(--radius-sm);
+  font-family: var(--sans); font-size: 14px; font-weight: 500;
+  cursor: pointer; transition: all 0.15s; padding: 10px 16px;
+  white-space: nowrap;
+}
+.btn-primary { background: var(--accent); color: #000; }
+.btn-primary:active { transform: scale(0.97); }
+.btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border2); }
+.btn-ghost { background: transparent; color: var(--text2); border: 1px solid var(--border); }
+.btn-danger { background: rgba(240,74,125,0.15); color: var(--accent3); border: 1px solid rgba(240,74,125,0.3); }
+.btn-sm { font-size: 12px; padding: 6px 12px; border-radius: 8px; }
+.btn-full { width: 100%; }
+.btn-icon { width: 36px; height: 36px; padding: 0; border-radius: 50%; }
+
+/* ── inputs ── */
+input, select, textarea {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 14px;
+  padding: 10px 12px;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.2s;
+  -webkit-appearance: none;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: var(--accent);
+}
+select option { background: var(--surface2); }
+textarea { resize: none; }
+label {
+  display: block;
+  font-size: 12px;
+  color: var(--text2);
+  margin-bottom: 5px;
+}
+.field { margin-bottom: 12px; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.field-row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+
+/* ── chips ── */
+.chip {
+  display: inline-flex; align-items: center;
+  background: var(--surface2); border: 1px solid var(--border2);
+  border-radius: 20px; padding: 4px 12px;
+  font-size: 12px; cursor: pointer; transition: all 0.15s;
+  color: var(--text2);
+}
+.chip.active { background: rgba(200,240,74,0.15); border-color: var(--accent); color: var(--accent); }
+.chip-group { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+
+/* ── progress ring ── */
+.ring-wrap { position: relative; display: inline-flex; align-items: center; justify-content: center; }
+.ring-text { position: absolute; text-align: center; }
+
+/* ── stat pills ── */
+.stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+.stat-pill {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 8px;
+  text-align: center;
+}
+.stat-val { font-family: var(--mono); font-size: 20px; font-weight: 700; }
+.stat-unit { font-size: 10px; color: var(--text3); margin-top: 2px; }
+.stat-label { font-size: 11px; color: var(--text2); margin-top: 4px; }
+
+/* ── calendar ── */
+.cal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 16px;
+}
+.cal-month { font-size: 17px; font-weight: 700; }
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  text-align: center;
+}
+.cal-dow {
+  font-size: 10px; color: var(--text3); padding: 4px 0;
+  font-family: var(--mono);
+}
+.cal-day {
+  aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+  font-size: 13px; border-radius: 50%; cursor: pointer;
+  position: relative; transition: all 0.15s;
+}
+.cal-day:hover { background: var(--surface2); }
+.cal-day.today { color: var(--accent); font-weight: 700; }
+.cal-day.selected { background: var(--accent); color: #000; font-weight: 700; }
+.cal-day.has-log::after {
+  content: '';
+  position: absolute;
+  bottom: 3px;
+  width: 4px; height: 4px;
+  background: var(--accent2);
+  border-radius: 50%;
+}
+.cal-day.selected::after { background: #000; }
+.cal-day.other-month { color: var(--text3); }
+
+/* ── exercise log ── */
+.exercise-item {
+  background: var(--surface2);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  margin-bottom: 8px;
+}
+.ex-name { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
+.set-row {
+  display: grid;
+  grid-template-columns: 28px 1fr 1fr 1fr 28px;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.set-num {
+  font-family: var(--mono);
+  font-size: 11px; color: var(--text3); text-align: center;
+}
+.set-input {
+  text-align: center;
+  padding: 7px 4px;
+  font-size: 14px;
+}
+.set-unit { font-size: 10px; color: var(--text3); text-align: center; }
+.set-del { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 14px; padding: 4px; }
+
+/* ── AI panel ── */
+.ai-bubble {
+  background: var(--surface2);
+  border-radius: 14px 14px 14px 4px;
+  padding: 14px 16px;
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text);
+  white-space: pre-wrap;
+  border: 1px solid var(--border);
+}
+.ai-bubble h4 { color: var(--accent); font-size: 13px; margin-bottom: 4px; }
+.ai-thinking {
+  display: flex; align-items: center; gap: 8px;
+  color: var(--text2); font-size: 13px;
+}
+.dot-pulse span {
+  display: inline-block; width: 6px; height: 6px;
+  background: var(--accent); border-radius: 50%; margin: 0 2px;
+  animation: pulse 1.2s infinite;
+}
+.dot-pulse span:nth-child(2) { animation-delay: 0.2s; }
+.dot-pulse span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes pulse { 0%,80%,100%{opacity:0.2;transform:scale(0.8)} 40%{opacity:1;transform:scale(1)} }
+
+/* ── chart ── */
+.chart-wrap { height: 120px; position: relative; }
+.chart-bar-wrap { display: flex; align-items: flex-end; gap: 4px; height: 100%; padding-bottom: 20px; }
+.chart-bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.chart-bar {
+  width: 100%; border-radius: 4px 4px 0 0;
+  background: linear-gradient(180deg, var(--accent) 0%, rgba(200,240,74,0.3) 100%);
+  min-height: 4px; transition: height 0.5s cubic-bezier(0.34,1.56,0.64,1);
+}
+.chart-bar-label { font-size: 10px; color: var(--text3); position: absolute; bottom: 0; }
+.chart-labels { display: flex; justify-content: space-between; margin-top: 4px; }
+.chart-label { font-size: 10px; color: var(--text3); flex: 1; text-align: center; }
+
+/* ── API stats ── */
+.api-stat { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.api-stat:last-child { border-bottom: none; }
+.api-stat-label { font-size: 13px; color: var(--text2); }
+.api-stat-val { font-family: var(--mono); font-size: 13px; color: var(--text); }
+
+/* ── modal ── */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+  display: flex; align-items: flex-end; z-index: 200;
+  opacity: 0; pointer-events: none; transition: opacity 0.2s;
+}
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+.modal {
+  background: var(--surface);
+  border-radius: 24px 24px 0 0;
+  padding: 16px 16px 32px;
+  width: 100%;
+  transform: translateY(20px); transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  max-height: 90vh; overflow-y: auto;
+}
+.modal-overlay.open .modal { transform: translateY(0); }
+.modal-handle {
+  width: 40px; height: 4px; background: var(--surface3);
+  border-radius: 2px; margin: 0 auto 16px;
+}
+.modal-title { font-size: 17px; font-weight: 700; margin-bottom: 16px; }
+
+/* ── section header ── */
+.section-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px;
+}
+.section-title { font-size: 15px; font-weight: 700; }
+
+/* ── toast ── */
+.toast {
+  position: fixed; bottom: calc(var(--tab-h) + 12px);
+  left: 50%; transform: translateX(-50%) translateY(20px);
+  background: var(--surface3); color: var(--text);
+  padding: 10px 20px; border-radius: 30px;
+  font-size: 13px; z-index: 300;
+  opacity: 0; transition: all 0.3s;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ── streak ── */
+.streak-row { display: flex; gap: 6px; align-items: center; }
+.streak-fire { font-size: 28px; }
+.streak-num { font-family: var(--mono); font-size: 36px; font-weight: 700; color: var(--accent); }
+.streak-label { font-size: 12px; color: var(--text2); }
+
+/* ── muscle tag ── */
+.muscle-tag {
+  display: inline-block;
+  background: rgba(125,240,184,0.12);
+  color: var(--accent2);
+  border-radius: 6px;
+  font-size: 11px; padding: 2px 8px;
+  margin-right: 4px;
+}
+
+/* ── weight chart line ── */
+canvas.weight-chart { width: 100%; height: 120px; display: block; }
+
+/* ── empty state ── */
+.empty {
+  text-align: center; padding: 40px 20px;
+  color: var(--text3); font-size: 13px;
+}
+.empty-icon { font-size: 40px; margin-bottom: 12px; }
+
+/* ── badge ── */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;
+}
+.badge-green { background: rgba(125,240,184,0.15); color: var(--accent2); }
+.badge-yellow { background: rgba(200,240,74,0.15); color: var(--accent); }
+.badge-red { background: rgba(240,74,125,0.15); color: var(--accent3); }
+
+/* page transitions */
+.view { display: none; }
+.view.active { display: block; }
+
+/* ── drag hint ── */
+.drag-handle { color: var(--text3); cursor: grab; font-size: 16px; margin-right: 4px; }
+
+/* scrollable chips */
+.exercises-lib {
+  display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px;
+  scrollbar-width: none;
+}
+.exercises-lib::-webkit-scrollbar { display: none; }
+
+/* top accent bar */
+.accent-bar {
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  border-radius: 0 0 4px 4px;
+  margin-bottom: 0;
+}
+
+/* ── RPE badge ── */
+.rpe-pill {
+  display: inline-flex; align-items: center;
+  font-family: var(--mono); font-size: 12px;
+  padding: 2px 8px; border-radius: 6px;
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="accent-bar"></div>
+
+  <!-- TOP BAR -->
+  <div class="topbar" id="topbar">
+    <div>
+      <div class="topbar-title" id="topbar-sub">今日</div>
+      <h1 id="topbar-main">FitLog</h1>
+    </div>
+    <div id="topbar-right"></div>
+  </div>
+
+  <!-- PAGES -->
+  <div class="page">
+
+    <!-- ── HOME ── -->
+    <div class="view active page-inner" id="view-home">
+      <!-- streak + quick stats -->
+      <div class="card" style="background: linear-gradient(135deg,#16161a,#1a1e10);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+          <div>
+            <div class="card-title">連續訓練</div>
+            <div class="streak-row">
+              <span class="streak-fire">🔥</span>
+              <span class="streak-num" id="streak-num">0</span>
+              <div>
+                <div style="font-size:18px;font-weight:700">天</div>
+                <div class="streak-label">保持下去！</div>
+              </div>
+            </div>
+          </div>
+          <div style="text-align:right">
+            <div class="badge badge-yellow" id="home-goal-badge">目標未設定</div>
+            <div style="font-size:12px;color:var(--text2);margin-top:6px" id="home-bmi-text">— BMI</div>
+          </div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-pill">
+            <div class="stat-val" id="home-week-count">0</div>
+            <div class="stat-unit">次</div>
+            <div class="stat-label">本週訓練</div>
+          </div>
+          <div class="stat-pill">
+            <div class="stat-val" id="home-week-vol">0</div>
+            <div class="stat-unit">kg·組</div>
+            <div class="stat-label">本週總量</div>
+          </div>
+          <div class="stat-pill">
+            <div class="stat-val" id="home-total-days">0</div>
+            <div class="stat-unit">天</div>
+            <div class="stat-label">累計訓練</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- weekly chart -->
+      <div class="card">
+        <div class="card-title">本週訓練量</div>
+        <div class="chart-wrap" id="week-chart-wrap">
+          <div class="chart-bar-wrap" id="week-chart"></div>
+        </div>
+        <div class="chart-labels" id="week-labels"></div>
+      </div>
+
+      <!-- recent workouts -->
+      <div class="section-head">
+        <span class="section-title">最近訓練</span>
+        <button class="btn btn-ghost btn-sm" onclick="switchTab('log')">全部</button>
+      </div>
+      <div id="recent-list"></div>
+    </div>
+
+    <!-- ── CALENDAR + LOG ── -->
+    <div class="view page-inner" id="view-log">
+      <!-- calendar -->
+      <div class="card" style="padding:16px">
+        <div class="cal-header">
+          <button class="btn btn-icon btn-ghost" id="cal-prev">‹</button>
+          <span class="cal-month" id="cal-month-label"></span>
+          <button class="btn btn-icon btn-ghost" id="cal-next">›</button>
+        </div>
+        <div class="cal-grid" id="cal-grid"></div>
+      </div>
+
+      <!-- selected day -->
+      <div class="section-head">
+        <span class="section-title" id="log-day-label">今天的訓練</span>
+        <button class="btn btn-primary btn-sm" onclick="openAddExercise()">＋ 新增動作</button>
+      </div>
+
+      <!-- body part chips -->
+      <div class="exercises-lib" id="quick-add-lib"></div>
+      <div style="height:10px"></div>
+
+      <div id="day-log-list"></div>
+
+      <div class="field" style="margin-top:12px">
+        <label>今日備註</label>
+        <textarea id="day-note" rows="3" placeholder="感覺、飲食、睡眠..."></textarea>
+      </div>
+      <button class="btn btn-primary btn-full" onclick="saveDayLog()">💾 儲存今日紀錄</button>
+      <div style="height:12px"></div>
+    </div>
+
+    <!-- ── AI COACH ── -->
+    <div class="view page-inner" id="view-ai">
+      <div class="card" style="background:linear-gradient(135deg,#0d1a0d,#161a10)">
+        <div class="card-title">AI 教練</div>
+        <div style="font-size:22px;font-weight:700;margin-bottom:6px">智慧健身顧問</div>
+        <div style="font-size:13px;color:var(--text2)">分析你的訓練、體重、飲食，給出個人化建議</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">分析類型</div>
+        <div class="chip-group" id="ai-type-chips">
+          <span class="chip active" data-type="full">全面分析</span>
+          <span class="chip" data-type="fatigue">疲勞評估</span>
+          <span class="chip" data-type="weight">重量建議</span>
+          <span class="chip" data-type="diet">飲食建議</span>
+          <span class="chip" data-type="plan">訓練計畫</span>
+        </div>
+      </div>
+
+      <div class="card" id="ai-custom-card">
+        <label>自訂問題（選填）</label>
+        <textarea id="ai-custom-q" rows="3" placeholder="例：我最近肩膀很緊，有什麼建議？"></textarea>
+      </div>
+
+      <!-- cost estimate -->
+      <div class="card" style="padding:12px 16px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div style="font-size:13px;color:var(--text2)">預估費用</div>
+          <div style="font-family:var(--mono);font-size:13px" id="ai-cost-est">~$0.001</div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">
+          <div style="font-size:13px;color:var(--text2)">本月用量</div>
+          <div style="font-family:var(--mono);font-size:13px" id="ai-month-cost">$0.000</div>
+        </div>
+      </div>
+
+      <button class="btn btn-primary btn-full" id="ai-analyze-btn" onclick="runAiAnalysis()" style="font-size:15px;padding:14px">
+        🤖 開始 AI 分析
+      </button>
+      <div style="height:16px"></div>
+
+      <div id="ai-result-area"></div>
+
+      <!-- history -->
+      <div class="section-head" style="margin-top:8px">
+        <span class="section-title">分析歷史</span>
+        <span style="font-size:12px;color:var(--text2)" id="ai-history-count">0 次</span>
+      </div>
+      <div id="ai-history-list"></div>
+    </div>
+
+    <!-- ── PROFILE ── -->
+    <div class="view page-inner" id="view-profile">
+      <div class="card">
+        <div class="card-title">個人資料</div>
+        <div class="field-row">
+          <div class="field">
+            <label>姓名</label>
+            <input id="p-name" type="text" placeholder="你的名字">
+          </div>
+          <div class="field">
+            <label>目標</label>
+            <select id="p-goal">
+              <option value="gain">增肌</option>
+              <option value="loss">減脂</option>
+              <option value="maintain">維持</option>
+              <option value="strength">增力</option>
+              <option value="endurance">耐力</option>
+            </select>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>身高 (cm)</label>
+            <input id="p-height" type="number" placeholder="170">
+          </div>
+          <div class="field">
+            <label>體重 (kg)</label>
+            <input id="p-weight" type="number" placeholder="70">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>年齡</label>
+            <input id="p-age" type="number" placeholder="25">
+          </div>
+          <div class="field">
+            <label>性別</label>
+            <select id="p-gender">
+              <option value="male">男</option>
+              <option value="female">女</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label>活動量</label>
+          <select id="p-activity">
+            <option value="sedentary">久坐（幾乎不運動）</option>
+            <option value="light">輕度（每週1-3天）</option>
+            <option value="moderate" selected>中度（每週3-5天）</option>
+            <option value="heavy">重度（每週6-7天）</option>
+            <option value="athlete">運動員</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>飲食偏好 / 限制</label>
+          <input id="p-diet" type="text" placeholder="例：高蛋白、不吃牛肉、無麩質...">
+        </div>
+        <div class="field">
+          <label>健康注意事項</label>
+          <input id="p-health" type="text" placeholder="例：膝蓋有傷、高血壓...">
+        </div>
+        <button class="btn btn-primary btn-full" onclick="saveProfile()">儲存個人資料</button>
+      </div>
+
+      <!-- weight trend -->
+      <div class="card">
+        <div class="section-head">
+          <span class="card-title" style="margin-bottom:0">體重趨勢</span>
+          <button class="btn btn-ghost btn-sm" onclick="openWeightEntry()">＋ 記錄</button>
+        </div>
+        <canvas id="weight-canvas" class="weight-chart" height="120"></canvas>
+        <div style="height:8px"></div>
+        <div id="weight-stats-row" class="stat-row"></div>
+      </div>
+
+      <!-- TDEE -->
+      <div class="card" id="tdee-card">
+        <div class="card-title">熱量目標</div>
+        <div id="tdee-display" style="font-size:13px;color:var(--text2)">請先填寫個人資料</div>
+      </div>
+    </div>
+
+    <!-- ── SETTINGS ── -->
+    <div class="view page-inner" id="view-settings">
+      <div class="card">
+        <div class="card-title">AI API 設定</div>
+        <div class="field">
+          <label>OpenAI API Key</label>
+          <input id="s-apikey" type="password" placeholder="sk-...">
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>模型</label>
+            <select id="s-model">
+              <option value="gpt-4o-mini">GPT-4o mini</option>
+              <option value="gpt-4o">GPT-4o</option>
+              <option value="gpt-4-turbo">GPT-4 Turbo</option>
+              <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>語言</label>
+            <select id="s-lang">
+              <option value="zh-TW">繁體中文</option>
+              <option value="en">English</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-full" onclick="saveSettings()">儲存設定</button>
+      </div>
+
+      <!-- API usage stats -->
+      <div class="card">
+        <div class="card-title">API 使用統計</div>
+        <div class="api-stat">
+          <span class="api-stat-label">總呼叫次數</span>
+          <span class="api-stat-val" id="stat-total-calls">0 次</span>
+        </div>
+        <div class="api-stat">
+          <span class="api-stat-label">本月費用</span>
+          <span class="api-stat-val" id="stat-month-cost">$0.0000</span>
+        </div>
+        <div class="api-stat">
+          <span class="api-stat-label">總花費</span>
+          <span class="api-stat-val" id="stat-total-cost">$0.0000</span>
+        </div>
+        <div class="api-stat">
+          <span class="api-stat-label">最近使用</span>
+          <span class="api-stat-val" id="stat-last-used">—</span>
+        </div>
+        <div class="api-stat">
+          <span class="api-stat-label">使用模型</span>
+          <span class="api-stat-val" id="stat-model">—</span>
+        </div>
+        <div style="margin-top:12px">
+          <button class="btn btn-danger btn-sm" onclick="clearApiStats()">清除統計</button>
+        </div>
+      </div>
+
+      <!-- data management -->
+      <div class="card">
+        <div class="card-title">資料管理</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <button class="btn btn-secondary btn-full" onclick="exportData()">📤 匯出資料 (JSON)</button>
+          <button class="btn btn-secondary btn-full" onclick="document.getElementById('import-input').click()">📥 匯入資料</button>
+          <input id="import-input" type="file" accept=".json" style="display:none" onchange="importData(event)">
+          <button class="btn btn-danger btn-full" onclick="clearAllData()">🗑 清除所有資料</button>
+        </div>
+        <div style="margin-top:12px;font-size:12px;color:var(--text3)">
+          匯出的 JSON 檔案包含所有訓練紀錄、個人資料、AI 歷史。可用於備份或換裝置。
+        </div>
+      </div>
+
+      <!-- about -->
+      <div class="card" style="text-align:center;padding:20px">
+        <div style="font-family:var(--mono);font-size:20px;font-weight:700;color:var(--accent)">FitLog</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:6px">v1.0 · 健身紀錄 × AI 教練</div>
+      </div>
+    </div>
+
+  </div><!-- end page -->
+
+  <!-- TABBAR -->
+  <div class="tabbar">
+    <button class="tab-btn active" data-tab="home" onclick="switchTab('home')">
+      <span class="tab-icon">🏠</span>
+      <span class="tab-label">主頁</span>
+    </button>
+    <button class="tab-btn" data-tab="log" onclick="switchTab('log')">
+      <span class="tab-icon">📅</span>
+      <span class="tab-label">日誌</span>
+    </button>
+    <button class="tab-btn" data-tab="ai" onclick="switchTab('ai')">
+      <span class="tab-icon">🤖</span>
+      <span class="tab-label">AI</span>
+    </button>
+    <button class="tab-btn" data-tab="profile" onclick="switchTab('profile')">
+      <span class="tab-icon">👤</span>
+      <span class="tab-label">個人</span>
+    </button>
+    <button class="tab-btn" data-tab="settings" onclick="switchTab('settings')">
+      <span class="tab-icon">⚙️</span>
+      <span class="tab-label">設定</span>
+    </button>
+  </div>
+</div>
+
+<!-- MODAL: Add Exercise -->
+<div class="modal-overlay" id="modal-ex">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">新增動作</div>
+    <div class="field">
+      <label>動作名稱</label>
+      <input id="ex-name-input" type="text" placeholder="例：臥推、深蹲、硬舉...">
+    </div>
+    <div class="card-title" style="margin-top:8px;margin-bottom:8px">快速選擇</div>
+    <div id="ex-preset-list" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px"></div>
+    <div class="field">
+      <label>肌群</label>
+      <div class="chip-group" id="ex-muscle-chips">
+        <span class="chip" data-m="胸">胸</span>
+        <span class="chip" data-m="背">背</span>
+        <span class="chip" data-m="肩">肩</span>
+        <span class="chip" data-m="手臂">手臂</span>
+        <span class="chip" data-m="核心">核心</span>
+        <span class="chip" data-m="腿">腿</span>
+        <span class="chip" data-m="臀">臀</span>
+        <span class="chip" data-m="有氧">有氧</span>
+      </div>
+    </div>
+    <div class="field-row" style="margin-top:4px">
+      <div class="field">
+        <label>組數</label>
+        <input id="ex-sets" type="number" value="3" min="1" max="20">
+      </div>
+      <div class="field">
+        <label>次數</label>
+        <input id="ex-reps" type="number" value="10" min="1" max="100">
+      </div>
+    </div>
+    <div class="field">
+      <label>重量 (kg，可為0)</label>
+      <input id="ex-weight-input" type="number" value="0" min="0" step="2.5">
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-ghost" style="flex:1" onclick="closeModal('modal-ex')">取消</button>
+      <button class="btn btn-primary" style="flex:2" onclick="addExercise()">新增</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Weight Entry -->
+<div class="modal-overlay" id="modal-weight">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">記錄體重</div>
+    <div class="field">
+      <label>今日體重 (kg)</label>
+      <input id="w-entry" type="number" step="0.1" placeholder="70.5">
+    </div>
+    <div class="field">
+      <label>日期</label>
+      <input id="w-date" type="date">
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-ghost" style="flex:1" onclick="closeModal('modal-weight')">取消</button>
+      <button class="btn btn-primary" style="flex:2" onclick="saveWeight()">儲存</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════
+// DATA LAYER
+// ═══════════════════════════════════════════
+const DB = {
+  get: k => { try { return JSON.parse(localStorage.getItem('fitlog_'+k)) } catch(e) { return null } },
+  set: (k,v) => localStorage.setItem('fitlog_'+k, JSON.stringify(v)),
+  keys: () => Object.keys(localStorage).filter(k=>k.startsWith('fitlog_')).map(k=>k.replace('fitlog_',''))
+};
+
+function getData(key, def) { return DB.get(key) ?? def; }
+function setData(key, val) { DB.set(key, val); }
+
+// ─── log key: "log_2025-01-01" → {exercises:[], note:'', date:''}
+function getLog(dateStr) { return getData('log_'+dateStr, { exercises:[], note:'', date:dateStr }); }
+function setLog(dateStr, data) { setData('log_'+dateStr, data); }
+function getAllLogDates() {
+  return DB.keys().filter(k=>k.startsWith('log_')).map(k=>k.replace('log_','')).sort();
+}
+
+// ─── profile
+function getProfile() {
+  return getData('profile', { name:'', height:'', weight:'', age:'', gender:'male', goal:'gain', activity:'moderate', diet:'', health:'' });
+}
+function saveProfile() {
+  const p = {
+    name: id('p-name').value,
+    height: +id('p-height').value,
+    weight: +id('p-weight').value,
+    age: +id('p-age').value,
+    gender: id('p-gender').value,
+    goal: id('p-goal').value,
+    activity: id('p-activity').value,
+    diet: id('p-diet').value,
+    health: id('p-health').value,
+  };
+  setData('profile', p);
+  renderTDEE(p);
+  renderHomeStats();
+  toast('個人資料已儲存 ✓');
+}
+
+// ─── settings
+function getSettings() { return getData('settings', { apikey:'', model:'gpt-4o-mini', lang:'zh-TW' }); }
+function saveSettings() {
+  setData('settings', {
+    apikey: id('s-apikey').value,
+    model: id('s-model').value,
+    lang: id('s-lang').value,
+  });
+  toast('設定已儲存 ✓');
+  renderApiStats();
+}
+
+// ─── api stats
+function getApiStats() { return getData('apistats', { calls:[], total_cost:0 }); }
+function recordApiCall(tokens_in, tokens_out, model) {
+  const stats = getApiStats();
+  const pricing = {
+    'gpt-4o-mini': { in:0.15, out:0.6 },
+    'gpt-4o': { in:2.5, out:10 },
+    'gpt-4-turbo': { in:10, out:30 },
+    'gpt-3.5-turbo': { in:0.5, out:1.5 },
+  };
+  const p = pricing[model] || pricing['gpt-4o-mini'];
+  const cost = (tokens_in/1e6)*p.in + (tokens_out/1e6)*p.out;
+  stats.calls.push({ ts: Date.now(), model, tokens_in, tokens_out, cost });
+  stats.total_cost = (stats.total_cost||0) + cost;
+  setData('apistats', stats);
+  renderApiStats();
+  return cost;
+}
+function clearApiStats() {
+  if (!confirm('確定清除所有 API 統計？')) return;
+  setData('apistats', { calls:[], total_cost:0 });
+  renderApiStats();
+  toast('統計已清除');
+}
+
+// ─── weight log
+function getWeights() { return getData('weights', []); }
+function addWeight(date, val) {
+  const w = getWeights();
+  const idx = w.findIndex(x=>x.date===date);
+  if (idx >= 0) w[idx].val = val; else w.push({ date, val });
+  w.sort((a,b)=>a.date.localeCompare(b.date));
+  setData('weights', w);
+}
+
+// ─── AI history
+function getAiHistory() { return getData('aihistory', []); }
+function addAiHistory(entry) {
+  const h = getAiHistory();
+  h.unshift(entry);
+  if (h.length > 30) h.pop();
+  setData('aihistory', h);
+}
+
+// ═══════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════
+const id = s => document.getElementById(s);
+const today = () => new Date().toISOString().split('T')[0];
+const fmtDate = s => { const d = new Date(s+'T00:00:00'); return `${d.getMonth()+1}/${d.getDate()}`; };
+const fmtDateFull = s => { const d = new Date(s+'T00:00:00'); return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`; };
+
+function toast(msg, dur=2000) {
+  const t = id('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), dur);
+}
+
+function openModal(mid) { id(mid).classList.add('open'); }
+function closeModal(mid) { id(mid).classList.remove('open'); }
+id('modal-ex').addEventListener('click', e => { if(e.target===id('modal-ex')) closeModal('modal-ex'); });
+id('modal-weight').addEventListener('click', e => { if(e.target===id('modal-weight')) closeModal('modal-weight'); });
+
+// ═══════════════════════════════════════════
+// TABS
+// ═══════════════════════════════════════════
+const TAB_LABELS = {
+  home: { sub:'總覽', main:'FitLog' },
+  log:  { sub:'訓練', main:'日誌' },
+  ai:   { sub:'分析', main:'AI 教練' },
+  profile:{ sub:'我的', main:'個人資料' },
+  settings:{ sub:'', main:'設定' },
+};
+function switchTab(tab) {
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  id('view-'+tab).classList.add('active');
+  document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+  const l = TAB_LABELS[tab];
+  id('topbar-sub').textContent = l.sub;
+  id('topbar-main').textContent = l.main;
+  if (tab==='home') renderHomeStats();
+  if (tab==='log') renderCalendar();
+  if (tab==='profile') { loadProfile(); renderWeightChart(); }
+  if (tab==='ai') renderAiHistory();
+  if (tab==='settings') { loadSettings(); renderApiStats(); }
+  window.scrollTo(0,0);
+  id('app').querySelector('.page').scrollTo(0,0);
+}
+
+// ═══════════════════════════════════════════
+// HOME
+// ═══════════════════════════════════════════
+function renderHomeStats() {
+  const dates = getAllLogDates();
+  const p = getProfile();
+
+  // streak
+  let streak = 0, cur = new Date();
+  while (true) {
+    const ds = cur.toISOString().split('T')[0];
+    const log = getLog(ds);
+    if (log.exercises.length > 0) { streak++; cur.setDate(cur.getDate()-1); }
+    else { break; }
+  }
+  id('streak-num').textContent = streak;
+  id('home-total-days').textContent = dates.filter(d=>getLog(d).exercises.length>0).length;
+
+  // BMI
+  if (p.height && p.weight) {
+    const bmi = (p.weight / (p.height/100)**2).toFixed(1);
+    let cat = bmi<18.5?'過輕':bmi<24?'正常':bmi<28?'過重':'肥胖';
+    id('home-bmi-text').textContent = `BMI ${bmi} · ${cat}`;
+  }
+  if (p.goal) {
+    const gl = { gain:'目標：增肌', loss:'目標：減脂', maintain:'目標：維持', strength:'目標：增力', endurance:'目標：耐力' };
+    id('home-goal-badge').textContent = gl[p.goal]||'';
+  }
+
+  // this week
+  const now = new Date();
+  const weekDates = [];
+  for (let i=6;i>=0;i--) {
+    const d = new Date(now); d.setDate(d.getDate()-i);
+    weekDates.push(d.toISOString().split('T')[0]);
+  }
+  let weekCount=0, weekVol=0;
+  const barData = weekDates.map(ds => {
+    const log = getLog(ds);
+    let vol = 0;
+    if (log.exercises.length>0) { weekCount++; }
+    log.exercises.forEach(ex => {
+      ex.sets.forEach(s => { vol += (s.weight||0)*(s.reps||0); });
+    });
+    weekVol += vol;
+    return { label: fmtDate(ds), val: vol, ds };
+  });
+  id('home-week-count').textContent = weekCount;
+  id('home-week-vol').textContent = weekVol > 999 ? (weekVol/1000).toFixed(1)+'k' : weekVol;
+
+  // bar chart
+  const maxV = Math.max(...barData.map(b=>b.val), 1);
+  const chartEl = id('week-chart');
+  chartEl.innerHTML = '';
+  barData.forEach(b => {
+    const col = document.createElement('div');
+    col.className = 'chart-bar-col';
+    col.style.cssText = 'position:relative;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%';
+    const bar = document.createElement('div');
+    bar.className = 'chart-bar';
+    bar.style.height = `${Math.max(4,(b.val/maxV)*90)}%`;
+    bar.style.width = '100%';
+    if (b.ds === today()) bar.style.background = 'linear-gradient(180deg,var(--accent2),rgba(125,240,184,0.3))';
+    col.appendChild(bar);
+    chartEl.appendChild(col);
+  });
+  const labelsEl = id('week-labels');
+  labelsEl.innerHTML = barData.map(b=>`<span class="chart-label">${b.label}</span>`).join('');
+
+  // recent
+  const recEl = id('recent-list');
+  const recent = dates.filter(d=>getLog(d).exercises.length>0).slice(-3).reverse();
+  if (!recent.length) {
+    recEl.innerHTML = '<div class="empty"><div class="empty-icon">🏋️</div>還沒有訓練紀錄<br>去日誌頁面開始記錄吧！</div>';
+    return;
+  }
+  recEl.innerHTML = recent.map(ds => {
+    const log = getLog(ds);
+    const exNames = log.exercises.map(e=>e.name).join('、');
+    const vol = log.exercises.reduce((a,ex)=>a+ex.sets.reduce((b,s)=>b+(s.weight||0)*(s.reps||0),0),0);
+    return `<div class="card" style="cursor:pointer" onclick="switchTab('log');selectedDate='${ds}';renderCalendar();renderDayLog()">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-size:13px;color:var(--text2);margin-bottom:2px">${fmtDateFull(ds)}</div>
+          <div style="font-size:15px;font-weight:600">${log.exercises.length} 個動作</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:2px">${exNames.slice(0,30)}${exNames.length>30?'...':''}</div>
+        </div>
+        <div style="text-align:right">
+          <div class="badge badge-yellow">${vol.toLocaleString()} kg</div>
+          ${log.note?`<div style="font-size:11px;color:var(--text3);margin-top:4px">📝 有備註</div>`:''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════
+// CALENDAR
+// ═══════════════════════════════════════════
+let calYear, calMonth, selectedDate;
+function initCalendar() {
+  const n = new Date();
+  calYear = n.getFullYear();
+  calMonth = n.getMonth();
+  selectedDate = today();
+}
+function renderCalendar() {
+  const months = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  id('cal-month-label').textContent = `${calYear} 年 ${months[calMonth]}`;
+  const grid = id('cal-grid');
+  grid.innerHTML = '';
+  const dows = ['日','一','二','三','四','五','六'];
+  dows.forEach(d=>{ const el=document.createElement('div'); el.className='cal-dow'; el.textContent=d; grid.appendChild(el); });
+  const first = new Date(calYear, calMonth, 1).getDay();
+  const days = new Date(calYear, calMonth+1, 0).getDate();
+  const prevDays = new Date(calYear, calMonth, 0).getDate();
+  const td = today();
+  // prev month
+  for (let i=first-1;i>=0;i--) {
+    const el=document.createElement('div'); el.className='cal-day other-month'; el.textContent=prevDays-i; grid.appendChild(el);
+  }
+  for (let d=1;d<=days;d++) {
+    const ds = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const el=document.createElement('div'); el.className='cal-day';
+    el.textContent=d;
+    if (ds===td) el.classList.add('today');
+    if (ds===selectedDate) el.classList.add('selected');
+    const log = getLog(ds);
+    if (log.exercises.length>0) el.classList.add('has-log');
+    el.addEventListener('click',()=>{ selectedDate=ds; renderCalendar(); renderDayLog(); });
+    grid.appendChild(el);
+  }
+  const total = first+days;
+  const remaining = total%7===0?0:7-(total%7);
+  for (let i=1;i<=remaining;i++) {
+    const el=document.createElement('div'); el.className='cal-day other-month'; el.textContent=i; grid.appendChild(el);
+  }
+  id('log-day-label').textContent = selectedDate===today()?'今天的訓練':`${fmtDateFull(selectedDate)} 的訓練`;
+  renderDayLog();
+}
+id('cal-prev').addEventListener('click',()=>{ calMonth--; if(calMonth<0){calMonth=11;calYear--;} renderCalendar(); });
+id('cal-next').addEventListener('click',()=>{ calMonth++; if(calMonth>11){calMonth=0;calYear++;} renderCalendar(); });
+
+// ═══════════════════════════════════════════
+// EXERCISE LOG
+// ═══════════════════════════════════════════
+const PRESETS = [
+  { name:'臥推', muscle:'胸' }, { name:'上斜臥推', muscle:'胸' }, { name:'飛鳥', muscle:'胸' },
+  { name:'引體向上', muscle:'背' }, { name:'划船', muscle:'背' }, { name:'硬舉', muscle:'背' },
+  { name:'深蹲', muscle:'腿' }, { name:'腿推', muscle:'腿' }, { name:'腿彎舉', muscle:'腿' },
+  { name:'肩推', muscle:'肩' }, { name:'側平舉', muscle:'肩' }, { name:'前平舉', muscle:'肩' },
+  { name:'二頭彎舉', muscle:'手臂' }, { name:'三頭下壓', muscle:'手臂' },
+  { name:'核心捲腹', muscle:'核心' }, { name:'平板支撐', muscle:'核心' },
+  { name:'跑步', muscle:'有氧' }, { name:'騎車', muscle:'有氧' }, { name:'跳繩', muscle:'有氧' },
+  { name:'臀推', muscle:'臀' }, { name:'羅馬尼亞硬舉', muscle:'臀' },
+];
+const MUSCLE_COLORS = { 胸:'#f04a7d', 背:'#7df0b8', 腿:'#4af0c8', 肩:'#c8f04a', 手臂:'#f0c84a', 核心:'#4a7df0', 有氧:'#f04a4a', 臀:'#b04af0' };
+
+let currentExercises = []; // [{name, muscle, sets:[{reps,weight}]}]
+let selectedMuscle = '';
+
+function renderDayLog() {
+  const log = getLog(selectedDate);
+  currentExercises = JSON.parse(JSON.stringify(log.exercises));
+  id('day-note').value = log.note||'';
+  renderExerciseList();
+
+  // quick add lib
+  const lib = id('quick-add-lib');
+  lib.innerHTML = '';
+  PRESETS.forEach(p => {
+    const chip = document.createElement('span');
+    chip.className = 'chip';
+    chip.textContent = p.name;
+    chip.style.borderColor = MUSCLE_COLORS[p.muscle]+'44';
+    chip.addEventListener('click', () => quickAddExercise(p));
+    lib.appendChild(chip);
+  });
+}
+
+function renderExerciseList() {
+  const el = id('day-log-list');
+  if (!currentExercises.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">💪</div>還沒有動作<br>從上方新增或快速選擇</div>';
+    return;
+  }
+  el.innerHTML = currentExercises.map((ex, ei) => `
+    <div class="exercise-item">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div>
+          <span class="ex-name">${ex.name}</span>
+          ${ex.muscle?`<span class="muscle-tag">${ex.muscle}</span>`:''}
+        </div>
+        <button class="btn btn-sm" style="color:var(--accent3);background:none;border:none;padding:2px" onclick="removeExercise(${ei})">✕</button>
+      </div>
+      <div class="set-row" style="margin-bottom:4px">
+        <span class="set-unit">#</span>
+        <span class="set-unit">重量(kg)</span>
+        <span class="set-unit">次數</span>
+        <span class="set-unit">完成</span>
+        <span></span>
+      </div>
+      ${ex.sets.map((s,si)=>`
+      <div class="set-row">
+        <span class="set-num">${si+1}</span>
+        <input class="set-input" type="number" value="${s.weight||0}" min="0" step="2.5"
+          onchange="updateSet(${ei},${si},'weight',this.value)">
+        <input class="set-input" type="number" value="${s.reps||10}" min="1"
+          onchange="updateSet(${ei},${si},'reps',this.value)">
+        <input type="checkbox" ${s.done?'checked':''} style="width:20px;height:20px;accent-color:var(--accent)"
+          onchange="updateSet(${ei},${si},'done',this.checked)">
+        <button class="set-del" onclick="removeSet(${ei},${si})">－</button>
+      </div>`).join('')}
+      <button class="btn btn-ghost btn-sm" style="width:100%;margin-top:6px" onclick="addSet(${ei})">＋ 加一組</button>
+    </div>
+  `).join('');
+}
+
+function updateSet(ei,si,key,val) {
+  if (key==='done') currentExercises[ei].sets[si].done = val;
+  else currentExercises[ei].sets[si][key] = +val;
+}
+function addSet(ei) {
+  const last = currentExercises[ei].sets.slice(-1)[0] || { weight:0, reps:10 };
+  currentExercises[ei].sets.push({ weight:last.weight, reps:last.reps, done:false });
+  renderExerciseList();
+}
+function removeSet(ei,si) {
+  currentExercises[ei].sets.splice(si,1);
+  if (!currentExercises[ei].sets.length) currentExercises.splice(ei,1);
+  renderExerciseList();
+}
+function removeExercise(ei) { currentExercises.splice(ei,1); renderExerciseList(); }
+
+function openAddExercise() {
+  id('ex-name-input').value='';
+  id('ex-sets').value=3; id('ex-reps').value=10; id('ex-weight-input').value=0;
+  selectedMuscle='';
+  document.querySelectorAll('#ex-muscle-chips .chip').forEach(c=>c.classList.remove('active'));
+  const preEl = id('ex-preset-list');
+  preEl.innerHTML = PRESETS.map(p=>`<span class="chip" data-name="${p.name}" data-m="${p.muscle}">${p.name}</span>`).join('');
+  preEl.querySelectorAll('.chip').forEach(c=>{
+    c.addEventListener('click',()=>{ id('ex-name-input').value=c.dataset.name; selectedMuscle=c.dataset.m; highlightMuscleChip(c.dataset.m); });
+  });
+  document.querySelectorAll('#ex-muscle-chips .chip').forEach(c=>{
+    c.addEventListener('click',()=>{ selectedMuscle=c.dataset.m; highlightMuscleChip(c.dataset.m); });
+  });
+  openModal('modal-ex');
+  setTimeout(()=>id('ex-name-input').focus(),300);
+}
+function highlightMuscleChip(m) {
+  document.querySelectorAll('#ex-muscle-chips .chip').forEach(c=>c.classList.toggle('active',c.dataset.m===m));
+}
+function addExercise() {
+  const name = id('ex-name-input').value.trim();
+  if (!name) { toast('請輸入動作名稱'); return; }
+  const sets = +id('ex-sets').value;
+  const reps = +id('ex-reps').value;
+  const weight = +id('ex-weight-input').value;
+  const setsArr = Array.from({length:sets},()=>({weight,reps,done:false}));
+  currentExercises.push({ name, muscle:selectedMuscle, sets:setsArr });
+  renderExerciseList();
+  closeModal('modal-ex');
+  toast(`已新增：${name}`);
+}
+function quickAddExercise(p) {
+  const last = currentExercises.find(e=>e.name===p.name);
+  const w = last?.sets?.slice(-1)[0]?.weight||0;
+  currentExercises.push({ name:p.name, muscle:p.muscle, sets:[{weight:w,reps:10,done:false},{weight:w,reps:10,done:false},{weight:w,reps:10,done:false}]});
+  renderExerciseList();
+  toast(`已新增：${p.name}`);
+}
+
+function saveDayLog() {
+  const log = { exercises:currentExercises, note:id('day-note').value, date:selectedDate };
+  setLog(selectedDate, log);
+  renderCalendar();
+  toast('✓ 訓練紀錄已儲存');
+}
+
+// ═══════════════════════════════════════════
+// PROFILE
+// ═══════════════════════════════════════════
+function loadProfile() {
+  const p = getProfile();
+  id('p-name').value=p.name||''; id('p-height').value=p.height||''; id('p-weight').value=p.weight||'';
+  id('p-age').value=p.age||''; id('p-gender').value=p.gender||'male'; id('p-goal').value=p.goal||'gain';
+  id('p-activity').value=p.activity||'moderate'; id('p-diet').value=p.diet||''; id('p-health').value=p.health||'';
+  renderTDEE(p);
+}
+
+function renderTDEE(p) {
+  if (!p.height || !p.weight || !p.age) { id('tdee-display').innerHTML='<span style="color:var(--text3)">請填寫身高、體重、年齡</span>'; return; }
+  const bmr = p.gender==='female'
+    ? 10*p.weight + 6.25*p.height - 5*p.age - 161
+    : 10*p.weight + 6.25*p.height - 5*p.age + 5;
+  const acts = { sedentary:1.2, light:1.375, moderate:1.55, heavy:1.725, athlete:1.9 };
+  const tdee = Math.round(bmr * (acts[p.activity]||1.55));
+  const goals = { gain: tdee+300, loss: tdee-400, maintain: tdee, strength: tdee+200, endurance: tdee+100 };
+  const target = goals[p.goal]||tdee;
+  const protein = Math.round(p.weight * (p.goal==='gain'||p.goal==='strength'?2.2:1.8));
+  id('tdee-display').innerHTML = `
+    <div class="stat-row" style="margin-bottom:8px">
+      <div class="stat-pill"><div class="stat-val">${tdee}</div><div class="stat-unit">kcal</div><div class="stat-label">每日維持</div></div>
+      <div class="stat-pill"><div class="stat-val" style="color:var(--accent)">${target}</div><div class="stat-unit">kcal</div><div class="stat-label">目標攝取</div></div>
+      <div class="stat-pill"><div class="stat-val" style="color:var(--accent2)">${protein}</div><div class="stat-unit">g</div><div class="stat-label">蛋白質</div></div>
+    </div>
+    <div style="font-size:12px;color:var(--text3)">
+      BMR: ${Math.round(bmr)} kcal · 目標: ${({gain:'增肌 +300',loss:'減脂 -400',maintain:'維持',strength:'增力 +200',endurance:'耐力 +100'}[p.goal])||'—'}
+    </div>
+  `;
+}
+
+// ═══════════════════════════════════════════
+// WEIGHT CHART
+// ═══════════════════════════════════════════
+function openWeightEntry() {
+  id('w-date').value = today();
+  id('w-entry').value = getProfile().weight||'';
+  openModal('modal-weight');
+  setTimeout(()=>id('w-entry').focus(),300);
+}
+function saveWeight() {
+  const v = +id('w-entry').value;
+  const d = id('w-date').value;
+  if (!v||!d) { toast('請填寫體重和日期'); return; }
+  addWeight(d,v);
+  closeModal('modal-weight');
+  renderWeightChart();
+  toast(`✓ 記錄 ${v} kg`);
+}
+
+function renderWeightChart() {
+  const canvas = id('weight-canvas');
+  const ctx = canvas.getContext('2d');
+  const weights = getWeights().slice(-30);
+
+  canvas.width = canvas.offsetWidth * 2;
+  canvas.height = 240;
+  ctx.scale(2,2);
+  const W = canvas.offsetWidth/2, H = 120;
+  ctx.clearRect(0,0,W,H);
+
+  if (weights.length < 2) {
+    ctx.fillStyle='#5a5a6a'; ctx.font='12px Noto Sans TC';
+    ctx.textAlign='center'; ctx.fillText('記錄至少兩筆體重以顯示趨勢',W/2,H/2);
+    id('weight-stats-row').innerHTML='';
+    return;
+  }
+
+  const vals = weights.map(w=>w.val);
+  const minV = Math.min(...vals)-1, maxV = Math.max(...vals)+1;
+  const toX = i => 16 + (i/(weights.length-1))*(W-32);
+  const toY = v => H-16 - ((v-minV)/(maxV-minV))*(H-32);
+
+  // gradient fill
+  const grad = ctx.createLinearGradient(0,0,0,H);
+  grad.addColorStop(0,'rgba(200,240,74,0.25)'); grad.addColorStop(1,'rgba(200,240,74,0)');
+  ctx.beginPath();
+  weights.forEach((w,i)=>{ i===0?ctx.moveTo(toX(i),toY(w.val)):ctx.lineTo(toX(i),toY(w.val)); });
+  ctx.lineTo(toX(weights.length-1),H); ctx.lineTo(toX(0),H); ctx.closePath();
+  ctx.fillStyle=grad; ctx.fill();
+
+  // line
+  ctx.beginPath(); ctx.strokeStyle='#c8f04a'; ctx.lineWidth=2; ctx.lineJoin='round';
+  weights.forEach((w,i)=>{ i===0?ctx.moveTo(toX(i),toY(w.val)):ctx.lineTo(toX(i),toY(w.val)); });
+  ctx.stroke();
+
+  // dots
+  weights.forEach((w,i)=>{
+    ctx.beginPath(); ctx.arc(toX(i),toY(w.val),3,0,Math.PI*2);
+    ctx.fillStyle='#c8f04a'; ctx.fill();
+  });
+
+  // stats
+  const cur = vals[vals.length-1], first = vals[0];
+  const diff = (cur-first).toFixed(1);
+  const avg = (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1);
+  id('weight-stats-row').innerHTML = `
+    <div class="stat-pill"><div class="stat-val">${cur}</div><div class="stat-unit">kg</div><div class="stat-label">最新</div></div>
+    <div class="stat-pill"><div class="stat-val" style="color:${diff>0?'var(--accent3)':'var(--accent2)'}">${diff>0?'+':''}${diff}</div><div class="stat-unit">kg</div><div class="stat-label">變化</div></div>
+    <div class="stat-pill"><div class="stat-val">${avg}</div><div class="stat-unit">kg</div><div class="stat-label">平均</div></div>
+  `;
+}
+
+// ═══════════════════════════════════════════
+// AI ANALYSIS
+// ═══════════════════════════════════════════
+let selectedAiType = 'full';
+document.querySelectorAll('#ai-type-chips .chip').forEach(c=>{
+  c.addEventListener('click',()=>{
+    document.querySelectorAll('#ai-type-chips .chip').forEach(x=>x.classList.remove('active'));
+    c.classList.add('active');
+    selectedAiType = c.dataset.type;
+    updateCostEstimate();
+  });
+});
+
+const COST_EST = { full:'~$0.003', fatigue:'~$0.001', weight:'~$0.001', diet:'~$0.002', plan:'~$0.003' };
+function updateCostEstimate() {
+  id('ai-cost-est').textContent = COST_EST[selectedAiType]||'~$0.002';
+  const stats = getApiStats();
+  const now = new Date();
+  const monthCost = (stats.calls||[]).filter(c=>{ const d=new Date(c.ts); return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear(); }).reduce((a,c)=>a+c.cost,0);
+  id('ai-month-cost').textContent = '$'+monthCost.toFixed(4);
+}
+
+async function runAiAnalysis() {
+  const settings = getSettings();
+  if (!settings.apikey) { toast('請先在設定頁面輸入 API Key'); switchTab('settings'); return; }
+
+  const profile = getProfile();
+  const dates = getAllLogDates().slice(-14);
+  const weights = getWeights().slice(-10);
+  const customQ = id('ai-custom-q').value.trim();
+
+  // build context
+  const recentLogs = dates.map(d=>{
+    const log = getLog(d);
+    return { date:d, exercises: log.exercises.map(ex=>({ name:ex.name, muscle:ex.muscle, sets:ex.sets })), note:log.note };
+  }).filter(l=>l.exercises.length>0);
+
+  const typePrompts = {
+    full: '請全面分析我的訓練狀況，包含：1.疲勞評估和恢復建議 2.各動作重量和組數建議 3.飲食和蛋白質攝取建議 4.未來一週訓練計畫建議 5.注意事項',
+    fatigue: '根據我近期訓練量，評估我的疲勞程度。請分析：1.是否有過度訓練跡象 2.哪些肌群需要更多休息 3.是否可以今天繼續訓練 4.恢復方法建議',
+    weight: '根據我的訓練歷史，為各個動作建議適合的重量、組數、次數。請針對我有記錄的動作逐一給出具體數字建議，並說明進步策略（線性週期化、雙倍進步等）',
+    diet: '根據我的目標、身體數據和訓練量，給出詳細的飲食建議：1.每日熱量和巨量營養素目標 2.適合的食物選擇 3.訓練前後的飲食時間 4.補充品建議（如需要）5.符合我的飲食偏好的餐食建議',
+    plan: '為我設計未來四週的訓練計畫，包含：1.每週訓練日安排 2.每次訓練的動作、組數、次數、重量 3.漸進超負荷計畫 4.去負荷（Deload）安排'
+  };
+
+  const systemPrompt = `你是一位專業健身教練和營養師，回答請用${settings.lang==='zh-TW'?'繁體中文':'English'}。
+根據用戶的個人資料和訓練紀錄，給出實際可行、個性化的建議。建議要具體（有數字），不要泛泛而談。`;
+
+  const userPrompt = `【個人資料】
+姓名: ${profile.name||'未知'}
+身高: ${profile.height||'?'}cm / 體重: ${profile.weight||'?'}kg
+年齡: ${profile.age||'?'} / 性別: ${profile.gender==='male'?'男':'女'}
+目標: ${{gain:'增肌',loss:'減脂',maintain:'維持',strength:'增力',endurance:'耐力'}[profile.goal]||'未設定'}
+活動量: ${{sedentary:'久坐',light:'輕度',moderate:'中度',heavy:'重度',athlete:'運動員'}[profile.activity]||'中度'}
+飲食偏好: ${profile.diet||'無特殊'}
+健康注意: ${profile.health||'無'}
+
+【近兩週體重趨勢】
+${weights.length?weights.map(w=>`${w.date}: ${w.val}kg`).join(', '):'無記錄'}
+
+【近兩週訓練紀錄】
+${recentLogs.length?recentLogs.map(l=>`
+${l.date}:
+${l.exercises.map(ex=>`  - ${ex.name}${ex.muscle?`(${ex.muscle})`:''}：${ex.sets.map(s=>`${s.weight}kg×${s.reps}次`).join(', ')}`).join('\n')}${l.note?`\n  備註: ${l.note}`:''}`).join('\n'):'過去兩週無訓練記錄'}
+
+【分析請求】
+${typePrompts[selectedAiType]||typePrompts.full}
+
+${customQ?`【額外問題】\n${customQ}`:''}`;
+
+  const resultArea = id('ai-result-area');
+  const btn = id('ai-analyze-btn');
+  btn.disabled = true;
+  resultArea.innerHTML = `<div class="ai-bubble"><div class="ai-thinking"><div class="dot-pulse"><span></span><span></span><span></span></div> AI 分析中，請稍候...</div></div>`;
+
+  try {
+    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'Authorization':'Bearer '+settings.apikey },
+      body: JSON.stringify({
+        model: settings.model,
+        messages: [{ role:'system', content:systemPrompt }, { role:'user', content:userPrompt }],
+        max_tokens: 1500,
+        temperature: 0.7,
+      })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+
+    const content = data.choices[0].message.content;
+    const usage = data.usage||{};
+    const cost = recordApiCall(usage.prompt_tokens||0, usage.completion_tokens||0, settings.model);
+
+    const entry = {
+      ts: Date.now(),
+      type: selectedAiType,
+      content,
+      model: settings.model,
+      tokens_in: usage.prompt_tokens||0,
+      tokens_out: usage.completion_tokens||0,
+      cost,
+    };
+    addAiHistory(entry);
+    renderAiResult(entry);
+    renderAiHistory();
+    updateCostEstimate();
+    toast(`✓ 分析完成 · 花費 $${cost.toFixed(5)}`);
+  } catch(e) {
+    resultArea.innerHTML = `<div class="ai-bubble" style="border-color:var(--accent3)">
+      <div style="color:var(--accent3);font-weight:700">分析失敗</div>
+      <div style="margin-top:8px;font-size:13px;color:var(--text2)">${e.message}</div>
+    </div>`;
+    toast('API 呼叫失敗');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function renderAiResult(entry) {
+  const el = id('ai-result-area');
+  const typeLabels = { full:'全面分析', fatigue:'疲勞評估', weight:'重量建議', diet:'飲食建議', plan:'訓練計畫' };
+  el.innerHTML = `
+    <div class="ai-bubble">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <span class="badge badge-green">${typeLabels[entry.type]||'分析'}</span>
+        <span style="font-size:11px;color:var(--text3);font-family:var(--mono)">${entry.model} · $${entry.cost.toFixed(5)}</span>
+      </div>
+      <div style="white-space:pre-wrap;font-size:14px;line-height:1.8">${escHtml(entry.content)}</div>
+    </div>
+  `;
+}
+
+function renderAiHistory() {
+  const history = getAiHistory();
+  id('ai-history-count').textContent = `${history.length} 次`;
+  const el = id('ai-history-list');
+  if (!history.length) { el.innerHTML='<div class="empty" style="padding:20px 0"><div class="empty-icon">🤖</div>尚無分析記錄</div>'; return; }
+  el.innerHTML = history.slice(0,5).map((h,i)=>{
+    const typeLabels = { full:'全面分析', fatigue:'疲勞評估', weight:'重量建議', diet:'飲食建議', plan:'訓練計畫' };
+    const d = new Date(h.ts);
+    return `<div class="card" style="cursor:pointer" onclick="showHistoryEntry(${i})">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <span class="badge badge-yellow" style="margin-bottom:4px">${typeLabels[h.type]||'分析'}</span>
+          <div style="font-size:12px;color:var(--text2);margin-top:4px">${d.getMonth()+1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:11px;font-family:var(--mono);color:var(--text3)">${h.model}</div>
+          <div style="font-size:11px;font-family:var(--mono);color:var(--accent3)">$${h.cost.toFixed(5)}</div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--text3);margin-top:8px;overflow:hidden;max-height:40px">${escHtml(h.content).slice(0,80)}...</div>
+    </div>`;
+  }).join('');
+}
+
+function showHistoryEntry(i) {
+  const h = getAiHistory()[i];
+  if (h) renderAiResult(h);
+  id('ai-result-area').scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+// ═══════════════════════════════════════════
+// SETTINGS / STATS
+// ═══════════════════════════════════════════
+function loadSettings() {
+  const s = getSettings();
+  id('s-apikey').value=s.apikey||'';
+  id('s-model').value=s.model||'gpt-4o-mini';
+  id('s-lang').value=s.lang||'zh-TW';
+}
+
+function renderApiStats() {
+  const stats = getApiStats();
+  const calls = stats.calls||[];
+  const now = new Date();
+  const monthCost = calls.filter(c=>{ const d=new Date(c.ts); return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear(); }).reduce((a,c)=>a+c.cost,0);
+  const last = calls[calls.length-1];
+  id('stat-total-calls').textContent = `${calls.length} 次`;
+  id('stat-month-cost').textContent = '$'+monthCost.toFixed(4);
+  id('stat-total-cost').textContent = '$'+(stats.total_cost||0).toFixed(4);
+  id('stat-last-used').textContent = last ? new Date(last.ts).toLocaleString('zh-TW') : '—';
+  const s = getSettings();
+  id('stat-model').textContent = s.model||'—';
+}
+
+// ═══════════════════════════════════════════
+// EXPORT / IMPORT
+// ═══════════════════════════════════════════
+function exportData() {
+  const payload = {
+    version: '1.0',
+    exported_at: new Date().toISOString(),
+    app: 'FitLog',
+    profile: getProfile(),
+    settings: { ...getSettings(), apikey: '[REDACTED]' },
+    logs: {},
+    weights: getWeights(),
+    ai_history: getAiHistory(),
+    api_stats: getApiStats(),
+  };
+  getAllLogDates().forEach(d => { payload.logs[d] = getLog(d); });
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type:'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `fitlog_backup_${today()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('✓ 資料已匯出');
+}
+
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (data.app !== 'FitLog') { toast('❌ 不是 FitLog 的備份檔'); return; }
+      if (!confirm(`確定匯入備份？（${data.exported_at?.slice(0,10)}）\n\n注意：這會覆蓋現有資料。`)) return;
+      if (data.profile) setData('profile', data.profile);
+      if (data.weights) setData('weights', data.weights);
+      if (data.ai_history) setData('aihistory', data.ai_history);
+      if (data.api_stats) setData('apistats', data.api_stats);
+      if (data.logs) Object.entries(data.logs).forEach(([d,log])=>setLog(d,log));
+      toast('✓ 資料匯入成功');
+      switchTab('home');
+    } catch(err) {
+      toast('❌ 匯入失敗：檔案格式錯誤');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value='';
+}
+
+function clearAllData() {
+  if (!confirm('確定要清除所有資料？這個動作無法復原。')) return;
+  DB.keys().forEach(k=>localStorage.removeItem('fitlog_'+k));
+  toast('已清除所有資料');
+  setTimeout(()=>location.reload(),800);
+}
+
+// ═══════════════════════════════════════════
+// UTIL
+// ═══════════════════════════════════════════
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
+function init() {
+  initCalendar();
+  renderHomeStats();
+  updateCostEstimate();
+
+  // close modals on overlay click (already set above)
+}
+
+init();
+</script>
+</body>
+</html>
